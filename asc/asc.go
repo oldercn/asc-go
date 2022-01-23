@@ -65,6 +65,7 @@ type Client struct {
 	Submission   *SubmissionService
 	TestFlight   *TestflightService
 	Users        *UsersService
+	SalesReport  *SalesReportService
 }
 
 // NewClient creates a new Client instance.
@@ -96,12 +97,9 @@ func NewClient(httpClient *http.Client) *Client {
 	c.Submission = (*SubmissionService)(&c.common)
 	c.TestFlight = (*TestflightService)(&c.common)
 	c.Users = (*UsersService)(&c.common)
+	c.SalesReport = (*SalesReportService)(&c.common)
 
 	return c
-}
-
-func (c *Client) Token() string {
-	return c.common.client.Token()
 }
 
 // SetHTTPDebug this enables global http request/response dumping for this API.
@@ -236,6 +234,25 @@ func appendingQueryOptions(s string, opt interface{}) (string, error) {
 	u.RawQuery = qs.Encode()
 
 	return u.String(), nil
+}
+
+func (c *Client) download(ctx context.Context, url string, query interface{}, options ...requestOption) (*Response, error) {
+	var err error
+	if query != nil {
+		url, err = appendingQueryOptions(url, query)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req, err := c.newRequest(ctx, "GET", url, nil, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.client.Do(req)
+	response := newResponse(resp)
+	return response, nil
 }
 
 // get sends a GET request to the API as configured.
