@@ -100,6 +100,10 @@ func NewClient(httpClient *http.Client) *Client {
 	return c
 }
 
+func (c *Client) Token() string {
+	return c.common.client.Token()
+}
+
 // SetHTTPDebug this enables global http request/response dumping for this API.
 func (c *Client) SetHTTPDebug(flag bool) {
 	c.httpDebug = flag
